@@ -39,6 +39,6 @@ class Property extends Model
             'page[number]' => $page,
             'page[size]' => 100
         ];
-        return Http::get('https://trial.craig.mtcserver15.com/api/properties', $params);
+        return Http::connectTimeout(30)->get('https://trial.craig.mtcserver15.com/api/properties', $params);
     }
 }

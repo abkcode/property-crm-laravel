@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\FetchProperty;
 use App\Models\Property;
-use App\Models\PropertyType;
 use Illuminate\Http\Request;
 
 class PropertyController extends Controller
@@ -25,44 +25,10 @@ class PropertyController extends Controller
      */
     public function fetch()
     {
-        $page = 1;
-        do {
-            $response = Property::fetchFromAPI($page);
-            foreach ($response->json('data') as $propertyDetails) {
-                PropertyType::firstOrCreate([
-                    'id' => $propertyDetails['property_type']['id'],
-                    'title' => $propertyDetails['property_type']['title']
-                ]);
-                $newProperty = [
-                    'property_type_id' => $propertyDetails['property_type']['id'],
-                    'county' => $propertyDetails['county'],
-                    'country' => $propertyDetails['country'],
-                    'town' => $propertyDetails['town'],
-                    'description' => $propertyDetails['description'],
-                    'address' => $propertyDetails['address'],
-                    'image_full' => $propertyDetails['image_full'],
-                    'image_thumbnail' => $propertyDetails['image_thumbnail'],
-                    'latitude' => $propertyDetails['latitude'],
-                    'longitude' => $propertyDetails['longitude'],
-                    'num_bedrooms' => $propertyDetails['num_bedrooms'],
-                    'num_bathrooms' => $propertyDetails['num_bathrooms'],
-                    'price' => $propertyDetails['price'],
-                    'type' => ($propertyDetails['type'] == 'rent') ? 1 : 0,
-                ];
-                dump($newProperty);
-
-                Property::updateOrCreate(
-                    ['api_uuid' => $propertyDetails['uuid']],
-                    $newProperty
-                );
-            }
-
-            $totalPages = $response->json('last_page');
-            $page++;
-        } while ($page <= $totalPages);
+        FetchProperty::dispatch();
 
         return [
-            'message' => 'fetched successfully'
+            'message' => 'properties will be fetched in few minutes'
         ];
     }
 
