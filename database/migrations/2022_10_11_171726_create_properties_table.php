@@ -26,13 +26,14 @@ return new class extends Migration
             $table->string('address');
             $table->string('image_full');
             $table->string('image_thumbnail');
-            $table->decimal('latitude', 10, 8);
-            $table->decimal('longitude', 11, 8);
+            $table->decimal('latitude', 10, 8)->nullable();
+            $table->decimal('longitude', 11, 8)->nullable();
             $table->tinyInteger('num_bedrooms');
             $table->tinyInteger('num_bathrooms');
             $table->float('price', 8, 2);
             $table->foreignIdFor(PropertyType::class);
             $table->tinyInteger('type'); // 0 - sale, 1 - rent
+            $table->integer('postcode')->nullable();
             $table->timestamps();
         });
     }

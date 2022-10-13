@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Jobs\FetchProperty;
 use App\Models\Property;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+
+use Image;
 
 class PropertyController extends Controller
 {
@@ -39,65 +42,56 @@ class PropertyController extends Controller
      */
     public function store(Request $request)
     {
-        // $request->validate([
-        //     'property_type_id' => ['required', 'max:255'],
+        $request->validate([
+            "county"=> ['required', 'max:255'],
+            "country"=> ['required', 'max:255'],
+            "town"=> ['required', 'max:255'],
+            "postcode"=> ['required', 'integer'],
+            "description"=> ['required', 'max:255'],
+            "address"=> ['required', 'max:255'],
+            "num_bedrooms"=> ['required', 'integer'],
+            "num_bathrooms"=> ['required', 'integer'],
+            "price"=> ['required', 'integer'],
+            'property_type_id' => ['required', 'exists:property_types,id'],
+            'type' => ['required', Rule::in(0, 1)],
+            'image' => 'required|image|mimes:jpg,png,jpeg,gif,svg|max:2048',
+        ]);
+        // $imagePath = $request->file('image')->store('image', 'public');
 
+        $image = $request->file('image');
+        $fileName = uniqid() . '_' . time() . '.' . $image->extension();
+        $storagePath = storage_path('app/public/image');
 
+        $thumbnailDir = 'thumb';
+        $img = Image::make($image->path());
+        $img->resize(100, 100, function ($const) {
+            $const->aspectRatio();
+        })->save($storagePath . '/' . $thumbnailDir . '/' . $fileName);
 
+        $fullImageDir = 'full';
+        $image->move($storagePath . '/' . $fullImageDir, $fileName);
 
+        $property = Property::create([
+            "county" => $request->county,
+            "country" => $request->country,
+            "town" => $request->town,
+            "postcode" => $request->postcode,
+            "description" => $request->description,
+            "address" => $request->address,
+            "num_bedrooms" => $request->num_bedrooms,
+            "num_bathrooms" => $request->num_bathrooms,
+            "price" => $request->price,
+            'property_type_id' => $request->property_type_id,
+            'type' => $request->type,
+            'image_full' => $thumbnailDir . '/' . $fileName,
+            'image_thumbnail' => $fullImageDir . '/' . $fileName,
+        ]);
 
-
-        //     'name' => ['required', 'max:255'],
-        //     'git_clone_url' => ['required', 'max:255'],
-        //     'git_main_branch_name' => ['required', 'max:255'],
-        //     'php_version' => ['required', Rule::in(Project::SUPPORTED_PHP_VERSIONS)],
-        //     'target_php_version' => [Rule::in(Project::SUPPORTED_PHP_VERSIONS)],
-        // ]);
-
-        // OpenSSH::setComment('pureloop-generated-key');
-        // $key = RSA::createKey();
-        // $privateKeyStr = $key->toString('OpenSSH');
-        // $publicKeyStr = $key->getPublicKey()
-        //     ->toString('OpenSSH')
-        // ;
-
-        // $project = Project::create([
-        //     'user_id' => Auth::user()->id,
-        //     'name' => $request->name,
-        //     'git_clone_url' => $request->git_clone_url,
-        //     'git_main_branch_name' => $request->git_main_branch_name,
-        //     'php_version' => $request->php_version,
-        //     'target_php_version' => $request->target_php_version,
-        //     'ssh_public_key' => $publicKeyStr,
-        //     'ssh_private_key' => Crypt::encryptString($privateKeyStr),
-        // ]);
-
-        // return [
-        //     'message' => 'Project created succesfully',
-        //     'project' => $project,
-        // ];
+        return [
+            'message' => 'Property created succesfully',
+            'property' => $property,
+        ];
     }
-
-    // /**
-    //  * Display the specified resource.
-    //  *
-    //  * @return \Illuminate\Http\Response
-    //  */
-    // public function show(int $id)
-    // {
-    //     $project = Project::where('id', $id)->where('user_id', Auth::user()->id)->first();
-    //     if ($project === null) {
-    //         return response()->json([
-    //             'message' => 'Project not found',
-    //         ], 404);
-    //     }
-
-    //     // dd(Crypt::decryptString($project->git_password));
-
-    //     return [
-    //         'project' => $project,
-    //     ];
-    // }
 
     /**
      * Update the specified resource in storage.
@@ -106,45 +100,87 @@ class PropertyController extends Controller
      */
     public function update(Request $request, int $id)
     {
-        // $request->validate([
-        //     'name' => ['max:255'],
-        //     // 'git_clone_url' => ['url', 'max:255'],
-        //     'git_clone_url' => ['max:255'],
-        //     'git_main_branch_name' => ['max:255'],
-        //     'php_version' => [Rule::in(Project::SUPPORTED_PHP_VERSIONS)],
-        //     'target_php_version' => [Rule::in(Project::SUPPORTED_PHP_VERSIONS)],
-        // ]);
-        // $project = Project::where('id', $id)->where('user_id', Auth::user()->id)->first();
-        // if ($project === null) {
-        //     return response()->json([
-        //         'message' => 'Project not found',
-        //     ], 404);
-        // }
-        // if ($request->get('name')) {
-        //     $project->name = $request->get('name');
-        // }
-        // if ($request->get('git_clone_url')) {
-        //     $project->git_clone_url = $request->get('git_clone_url');
-        // }
-        // if ($request->get('git_main_branch_name')) {
-        //     $project->git_main_branch_name = $request->get('git_main_branch_name');
-        // }
-        // if ($request->get('php_version')) {
-        //     $project->php_version = $request->get('php_version');
-        // }
-        // if ($request->get('target_php_version')) {
-        //     $project->target_php_version = $request->get('target_php_version');
-        // }
-        // if (!$project->save()) {
-        //     return response()->json([
-        //         'message' => 'Failed to update the project',
-        //     ], 500);
-        // }
+        $request->validate([
+            "county"=> ['required', 'max:255'],
+            "country"=> ['required', 'max:255'],
+            "town"=> ['required', 'max:255'],
+            "postcode"=> ['required', 'integer'],
+            "description"=> ['required', 'max:255'],
+            "address"=> ['required', 'max:255'],
+            "num_bedrooms"=> ['required', 'integer'],
+            "num_bathrooms"=> ['required', 'integer'],
+            "price"=> ['required', 'integer'],
+            'property_type_id' => ['required', 'exists:property_types,id'],
+            'type' => ['required', Rule::in(0, 1)],
+            'image' => 'required|image|mimes:jpg,png,jpeg,gif,svg|max:2048',
+        ]);
 
-        // return [
-        //     'message' => 'Project updated succesfully',
-        //     'project' => $project,
-        // ];
+        $property = Property::where('id', $id)->first();
+        if ($property === null) {
+            return response()->json([
+                'message' => 'Property not found',
+            ], 404);
+        }
+        if ($request->get('county')) {
+            $property->county = $request->get('county');
+        }
+        if ($request->get('country')) {
+            $property->country = $request->get('country');
+        }
+        if ($request->get('town')) {
+            $property->town = $request->get('town');
+        }
+        if ($request->get('postcode')) {
+            $property->postcode = $request->get('postcode');
+        }
+        if ($request->get('description')) {
+            $property->description = $request->get('description');
+        }
+        if ($request->get('address')) {
+            $property->address = $request->get('address');
+        }
+        if ($request->get('num_bedrooms')) {
+            $property->num_bedrooms = $request->get('num_bedrooms');
+        }
+        if ($request->get('num_bathrooms')) {
+            $property->num_bathrooms = $request->get('num_bathrooms');
+        }
+        if ($request->get('price')) {
+            $property->price = $request->get('price');
+        }
+        if ($request->get('property_type_id')) {
+            $property->property_type_id = $request->get('property_type_id');
+        }
+        if ($request->get('type')) {
+            $property->type = $request->get('type');
+        }
+        if ($request->file('image')) {
+            $image = $request->file('image');
+            $fileName = uniqid() . '_' . time() . '.' . $image->extension();
+            $storagePath = storage_path('app/public/image');
+
+            $thumbnailDir = 'thumb';
+            $img = Image::make($image->path());
+            $img->resize(100, 100, function ($const) {
+                $const->aspectRatio();
+            })->save($storagePath . '/' . $thumbnailDir . '/' . $fileName);
+
+            $fullImageDir = 'full';
+            $image->move($storagePath . '/' . $fullImageDir, $fileName);
+
+            $property->image_full = $thumbnailDir . '/' . $fileName;
+            $property->image_thumbnail = $fullImageDir . '/' . $fileName;
+        }
+        if (!$property->save()) {
+            return response()->json([
+                'message' => 'Failed to update the property',
+            ], 500);
+        }
+
+        return [
+            'message' => 'Property updated succesfully',
+            'property' => $property,
+        ];
     }
 
     /**
@@ -154,20 +190,20 @@ class PropertyController extends Controller
      */
     public function destroy(int $id)
     {
-        // $project = Project::where('id', $id)->where('user_id', Auth::user()->id)->first();
-        // if ($project === null) {
-        //     return response()->json([
-        //         'message' => 'Project not found',
-        //     ], 404);
-        // }
-        // if (!$project->delete()) {
-        //     return response()->json([
-        //         'message' => 'Failed to delete the project',
-        //     ], 500);
-        // }
+        $property = Property::where('id', $id)->first();
+        if ($property === null) {
+            return response()->json([
+                'message' => 'Property not found',
+            ], 404);
+        }
+        if (!$property->delete()) {
+            return response()->json([
+                'message' => 'Failed to delete the property',
+            ], 500);
+        }
 
-        // return [
-        //     'message' => 'Project deleted succesfully',
-        // ];
+        return [
+            'message' => 'Property deleted succesfully',
+        ];
     }
 }

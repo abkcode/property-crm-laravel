@@ -21,7 +21,6 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::prefix('properties')->group(function () {
     Route::get('/', [PropertyController::class, 'index']);
-    // Route::get('/{id}', [PropertyController::class, 'show']);
     Route::get('/fetch', [PropertyController::class, 'fetch']);
     Route::post('/', [PropertyController::class, 'store']);
     Route::put('/{id}', [PropertyController::class, 'update']);

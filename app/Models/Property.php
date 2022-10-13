@@ -31,6 +31,7 @@ class Property extends Model
         'num_bathrooms',
         'price',
         'type',
+        'postcode'
     ];
 
     public static function fetchFromAPI($page) {
@@ -39,6 +40,6 @@ class Property extends Model
             'page[number]' => $page,
             'page[size]' => 100
         ];
-        return Http::connectTimeout(30)->get('https://trial.craig.mtcserver15.com/api/properties', $params);
+        return Http::connectTimeout(300)->get('https://trial.craig.mtcserver15.com/api/properties', $params);
     }
 }
