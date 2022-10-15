@@ -18,7 +18,26 @@ class PropertyController extends Controller
      */
     public function index()
     {
-        return Property::paginate();
+        return Property::with('propertyType')->paginate();
+    }
+
+    /**
+     * Display the specified resource from storage.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function show(int $id)
+    {
+        $property = Property::where('id', $id)->first();
+        if ($property === null) {
+            return response()->json([
+                'message' => 'Property not found',
+            ], 404);
+        }
+
+        return [
+            'property' => $property,
+        ];
     }
 
     /**
@@ -112,7 +131,7 @@ class PropertyController extends Controller
             "price"=> ['required', 'integer'],
             'property_type_id' => ['required', 'exists:property_types,id'],
             'type' => ['required', Rule::in(0, 1)],
-            'image' => 'required|image|mimes:jpg,png,jpeg,gif,svg|max:2048',
+            'image' => 'image|mimes:jpg,png,jpeg,gif,svg|max:2048',
         ]);
 
         $property = Property::where('id', $id)->first();

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\PropertyController;
+use App\Http\Controllers\PropertyTypeController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -22,7 +23,12 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::prefix('properties')->group(function () {
     Route::get('/', [PropertyController::class, 'index']);
     Route::get('/fetch', [PropertyController::class, 'fetch']);
+    Route::get('/{id}', [PropertyController::class, 'show']);
     Route::post('/', [PropertyController::class, 'store']);
     Route::put('/{id}', [PropertyController::class, 'update']);
     Route::delete('/{id}', [PropertyController::class, 'destroy']);
+});
+
+Route::prefix('property_types')->group(function () {
+    Route::get('/', [PropertyTypeController::class, 'index']);
 });

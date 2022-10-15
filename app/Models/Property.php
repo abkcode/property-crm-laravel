@@ -42,4 +42,9 @@ class Property extends Model
         ];
         return Http::connectTimeout(300)->get('https://trial.craig.mtcserver15.com/api/properties', $params);
     }
+
+    public function propertyType()
+    {
+        return $this->belongsTo(PropertyType::class);
+    }
 }
